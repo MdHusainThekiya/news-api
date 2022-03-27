@@ -4,7 +4,11 @@ const authentication = require("../../middlewares/authentication");
 const express = require("express");
 const router = express.Router();
 
-router.get("/", authentication.verifyUser, articleController.readData);
+router.get(
+  "/",
+  // authentication.verifyUser,
+  articleController.readData
+);
 
 router.post(
   "/",

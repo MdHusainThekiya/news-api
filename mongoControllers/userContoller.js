@@ -1,5 +1,6 @@
 const mongoClient = require("../mongoClient");
 const mongodb = require("mongodb");
+const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
 const { raw } = require("express");
 const databaseName = process.env.DATABASE_NAME || "NewsAPI";
@@ -55,18 +56,19 @@ const readData = async (req, res) => {
 const createData = async (req, res) => {
   try {
     let rawData = await userDbConnect();
+    const salt = await bcrypt.genSalt(10);
     let processedData = await rawData.insertOne({
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       email: req.body.email,
-      password: req.body.password,
+      password: await bcrypt.hash(req.body.password, salt),
       isAdmin: req.body.isAdmin || false,
     });
     console.log("created user data =>", processedData);
     return res.status(201).send({
       message: "user data created successfully",
       totalCount: Object.keys(req.body).length || 0,
-      status: [processedData, req.body] || [],
+      status: [processedData, await rawData.findOne({ email : req.body.email })] || [],
     });
   } catch (error) {
     console.log("unable to post/create user =>", error.message);
@@ -86,6 +88,7 @@ const updateData = async (req, res) => {
       findUserDataByEmailInDb._id.toString() ===
       new mongodb.ObjectId(req.params.id).toString()
     ) {
+      const salt = await bcrypt.genSalt(10);
       let processedData = await rawData.updateOne(
         { _id: new mongodb.ObjectId(req.params.id) },
         {
@@ -93,7 +96,7 @@ const updateData = async (req, res) => {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
             email: req.body.email,
-            password: req.body.password,
+            password: await bcrypt.hash(req.body.password, salt),
             isAdmin: req.body.isAdmin || false,
           },
         }
@@ -102,7 +105,7 @@ const updateData = async (req, res) => {
       return res.status(201).send({
         message: "user data updated successfully",
         totalCount: Object.keys(req.body).length || 0,
-        status: [processedData, req.body] || [],
+        status: [processedData, await rawData.findOne({ email : req.body.email })] || [],
       });
     } else {
       console.log(

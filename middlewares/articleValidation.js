@@ -4,10 +4,10 @@ const articleController = require("../mongoControllers/articleController");
 const validateNewsArticle = async (req, res, next) => {
   try {
     const validator = new Validator(req.body, {
-      title: "string|required|minLength:5|maxLength:40",
+      title: "string|required|minLength:5|maxLength:100",
       category: "string|required|minLength:3|maxLength:40",
-      description: "string|required|minLength:20|maxLength:150",
-      content: "string|required|minLength:20|maxLength:700",
+      description: "string|required|minLength:20|maxLength:200",
+      content: "string|required|minLength:20|maxLength:1000",
     });
 
     const isMatched = await validator.check();
@@ -33,7 +33,7 @@ const validateNewsArticle = async (req, res, next) => {
 const validateTitleForNewNewsArticle = async (req, res, next) => {
   try {
     const validator = new Validator(req.body, {
-      title: "string|required|minLength:5|maxLength:40",
+      title: "string|required|minLength:5|maxLength:100",
     });
     validator.addPostRule(async (data) => {
       let rawData = await articleController.newsArticleDbConnect();
@@ -68,8 +68,7 @@ const validateTitleForNewNewsArticle = async (req, res, next) => {
   }
 };
 
-
 module.exports = {
-    validateNewsArticle,
-    validateTitleForNewNewsArticle
-}
+  validateNewsArticle,
+  validateTitleForNewNewsArticle,
+};
